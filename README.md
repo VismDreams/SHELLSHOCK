@@ -2,6 +2,7 @@
 
 ## EN:
 **A reverse engineering project involving the PSP Go firmware (6.60 - 6.61)**
+
 It's not a shellcode on template pic
 
 **To Do:**
@@ -19,6 +20,7 @@ I'd appreciate it if you could help me with something!
 
 ## RU:
 **Проект, изучающий работу прошивки PSP Go (6.60 - 6.61) методикой реверс-инжиниринга**
+
 Это не шеллкод на "обложке"
 
 **To Do:**
