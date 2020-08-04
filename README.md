@@ -3,7 +3,7 @@
 ## EN:
 **A reverse engineering project involving the PSP Go firmware (6.60 - 6.61)**
 
-It's not a shellcode on template pic
+It's not a opcodes in shellcode on template pic
 
 **To Do:**
 1. Decrypt data
@@ -21,7 +21,7 @@ I'd appreciate it if you could help me with something!
 ## RU:
 **Проект, изучающий работу прошивки PSP Go (6.60 - 6.61) методикой реверс-инжиниринга**
 
-Это не шеллкод на "обложке"
+Это не опкоды в шеллкоде на "обложке"
 
 **To Do:**
 1. Декриптовать (или дешифровать) все данные flash0 и flash1, получив листинги
