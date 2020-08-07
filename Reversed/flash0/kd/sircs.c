@@ -1,6 +1,13 @@
 /* sircs.c - Sony Integrated Remote Control System */
 /* description - https://www.cypress.com/file/58421/download */
 
+/* possible includes */
+#include <pspiofilemgr_kernel.h>
+#include <pspthreadman_kernel.h>
+#include <pspsysreg.h>
+#include <pspsirc.h>
+#include <pspgpio.h>
+
 /* ENTRY */
 uint entry(void) {
   int iVar1;
@@ -256,7 +263,7 @@ undefined4 FUN_00001488(void) {
   undefined4 uVar1;
   undefined auStack32 [16];
 
-  uVar1 = FUN_00002368(0x24050001,0x10,1,auStack32);
+  uVar1 = sceKernelWaitEventFlag(0x24050001,0x10,1,auStack32);
   return uVar1;
 }
 
@@ -264,7 +271,7 @@ undefined4 FUN_00001488(void) {
 undefined4 FUN_000014c0(void) {
   undefined4 uVar1;
 
-  uVar1 = FUN_00002300();
+  uVar1 = sceKernelCpuSuspendIntr();
 
   /* 0x00000070 - 0x0000006c are R/0 addresses and uses RAM */
   uRam00000070 = 0;
@@ -274,8 +281,8 @@ undefined4 FUN_000014c0(void) {
   do {
   } while ((_DAT_be540018 & 0x10) == 0);
   _DAT_be540004 = 0xffff;
-  FUN_00002398(0x24050001,0xffffffef);
-  FUN_00002318(uVar1);
+  sceKernelCpuSuspendIntr(0x24050001,0xffffffef);
+  sceKernelCpuSuspendIntr(uVar1);
 
   return 0;
 }
@@ -284,7 +291,7 @@ int FUN_00001574(void) {
   int iVar1;
   undefined auStack32 [16];
 
-  iVar1 = FUN_00002368(0x24050001,0x20,0x20,auStack32);
+  iVar1 = sceKernelWaitEventFlag(0x24050001,0x20,0x20,auStack32);
   if (-1 < iVar1) {
     iVar1 = 0;
   }
@@ -296,17 +303,17 @@ int FUN_00001574(void) {
 undefined4 FUN_000015c0(undefined4 *param_1) {
   undefined4 uVar1;
 
-  uVar1 = FUN_00002300();
+  uVar1 = sceKernelWaitEventFlag();
   *param_1 = 0xc83e001c;
 
-  FUN_00002318(uVar1);
+  sceKernelWaitEventFlag(uVar1);
   return 0;
 }
 
 undefined4 FUN_00001624(void) {
   undefined4 uVar1;
 
-  uVar1 = FUN_00002300();
+  uVar1 = sceKernelWaitEventFlag();
 
   /* 0x00000070 - 0x0000006c are R/0 addresses and uses RAM */
   uRam00000060 = 0;
@@ -314,8 +321,8 @@ undefined4 FUN_00001624(void) {
   uRam00000068 = 0;
 
   do {
-    FUN_00002398(0x24050001,0xffffffdf);
-    FUN_00002318(uVar1);
+    sceKernelWaitEventFlag(0x24050001,0xffffffdf);
+    sceKernelWaitEventFlag(uVar1);
     FUN_00001a28();
   } while ((_DAT_be540018 & 8) != 0);
 
@@ -324,13 +331,13 @@ undefined4 FUN_00001624(void) {
 
 undefined4 FUN_000016b8(void) {
   int iVar1;
-
-  iVar1 = FUN_00002440();
+  
+  iVar1 = sceSysregGetTachyonVersion();
   if (iVar1 < 0x500000) {
-    FUN_000023d0(4);
+    sceGpioPortClear(4);
   }
-  FUN_00002430(5);
-  FUN_00002428(5);
+  sceSysregUartIoEnable(5);
+  sceSysregUartClkEnable(5);
   _DAT_be540004 = 0xffff;
   _DAT_be54001c = 0x280;
   _DAT_be540020 = 0xd;
@@ -340,20 +347,20 @@ undefined4 FUN_000016b8(void) {
   _DAT_be540030 = 0x307;
   _DAT_be540034 = 0;
   _DAT_be540038 = 0x50;
-
+  
   return 0;
 }
 
 undefined4 FUN_000017d4(void) {
   int iVar1;
-
-  FUN_00002438(5);
-  FUN_00002428(5);
-  iVar1 = FUN_00002440();
+  
+  sceSysregUartIoDisable(5);
+  sceSysregUartClkEnable(5);
+  iVar1 = sceSysregGetTachyonVersion();
   if (iVar1 < 0x500000) {
-    FUN_000023d8(4);
+    sceGpioPortSet(4);
   }
-
+  
   return 0;
 }
 
@@ -363,21 +370,21 @@ undefined4 FUN_00001828(void) {
 
   /* R/O address */
   /* SceIrdaDrive - InfraRed Data Association Driver? */
-  iRam00000078 = FUN_000023a8("SceIrdaDriver",1,1,0x3c070000);
+  iRam00000078 = sceKernelCreateFpl("SceIrdaDriver",1,1,0x3c070000);
 
   uVar2 = 0x802a0006;
 
   if (-1 < iRam00000078) {
-    iVar1 = FUN_00002380(iRam00000078,0x88);
+    iVar1 = sceKernelTryAllocateFpl(iRam00000078,0x88);
     uVar2 = 0x802a0006;
     if (-1 < iVar1) {
-      iVar1 = FUN_00002380(0x4021,0x84);
+      iVar1 = sceKernelTryAllocateFpl(0x4021,0x84);
       uVar2 = 0x802a0006;
       if (-1 < iVar1) {
-        FUN_00002310(0x25,2,FUN_000020e8,0x40);
-        FUN_00002308(0x25);
+        sceKernelRegisterIntrHandler(0x25,2,FUN_000020e8,0x40);
+        sceKernelEnableIntr(0x25);
         /* R/O address */
-        iRam0000008c = FUN_00002378("SceIrdaDriver",0x201,0,0);
+        iRam0000008c = sceKernelEnableIntr("SceIrdaDriver",0x201,0,0);
         uVar2 = 0x802a0006;
         if (-1 < iRam0000008c) {
           uVar2 = 0;
@@ -391,17 +398,17 @@ undefined4 FUN_00001828(void) {
 
 
 void FUN_00001910(void) {
-  FUN_00002320(0x25);
-  FUN_00002328(0x25);
-  FUN_00002390(0x24060001);
+  sceKernelDisableIntr(0x25);
+  sceKernelReleaseIntrHandler(0x25);
+  sceKernelCancelAlarm(0x24060001);
 
   /* R/O address */
   uRam00000090 = 0;
-  FUN_000023c8(0x24050001);
+  sceKernelDeleteEventFlag(0x24050001);
 
   /* 0x0000008c & 0x00000078 are R/O addresses */
   uRam0000008c = 0;
-  FUN_000023c0(0x4021);
+  sceKernelDeleteFpl(0x4021);
   uRam00000078 = 0;
 
   return;
@@ -412,7 +419,7 @@ undefined4 FUN_0000198c(int param_1) {
 
   if (*(int *)(param_1 + 0x50) == 0) {
     FUN_00001a68();
-    iVar1 = FUN_00002388(100,FUN_00002114,param_1);
+    iVar1 = sceKernelSetAlarm(100,FUN_00002114,param_1);
     *(int *)(param_1 + 0x50) = iVar1;
     if (iVar1 < 0) {
       *(undefined4 *)(param_1 + 0x50) = 0;
@@ -430,7 +437,7 @@ void FUN_000019e4(void) {
 }
 
 void FUN_00001a28(void) {
-  FUN_000023e8(0);
+  sceKernelSetAlarm(0);
   uRam0000005c = 0;
 
   return;
@@ -470,13 +477,13 @@ void FUN_00001b28(undefined4 param_1) {
 }
 
 void FUN_00001b34(void) {
-  FUN_00002338(&PTR_DAT_000027a8);
+  sceKernelSetAlarm(&PTR_DAT_000027a8);
 
   return;
 }
 
 undefined4 FUN_00001b54(void) {
-  FUN_00002340(&DAT_00002730);
+  sceKernelSetAlarm(&DAT_00002730);
 
   return 0;
 }
@@ -484,11 +491,11 @@ undefined4 FUN_00001b54(void) {
 undefined4 FUN_00001b7c(void) {
   int iVar1;
 
-  iVar1 = FUN_00002440();
+  iVar1 = sceSysregGetTachyonVersion();
   if (iVar1 < 0x500000) {
     /* R/O address*/
     uRam00000040 = 1;
-    FUN_000023e0(2,0);
+    sceGpioSetPortMode(2,0);
   }
 
   /* 0x00000058 - 0x00000080 are R/O addresses*/
@@ -496,7 +503,7 @@ undefined4 FUN_00001b7c(void) {
   uRam0000007c = 0x400;
   uRam00000080 = 0x400;
 
-  FUN_000023f8(0);
+  sceKernelRegisterSysEventHandler(0);
   return 0;
 }
 
@@ -563,7 +570,7 @@ uint FUN_00001eac(int param_1,uint param_2) {
 
   uVar2 = 0x80020324;
   if (param_1 != 0) {
-    uVar1 = FUN_00002300();
+    uVar1 = sceKernelCpuSuspendIntr();
     uVar2 = 0;
     if (param_2 != 0) {
       do {
@@ -575,8 +582,8 @@ uint FUN_00001eac(int param_1,uint param_2) {
         uRam0000006c = 0x24050001;
       } while (uVar2 < param_2);
     }
-    FUN_00002398(0x24050001,0xffffffef);
-    FUN_00002318(uVar1);
+    sceKernelCpuSuspendIntr(0x24050001,0xffffffef);
+    sceKernelCpuSuspendIntr(uVar1);
   }
 
   return uVar2;
@@ -589,11 +596,11 @@ undefined4 FUN_00001fbc(int param_1) {
   uVar2 = 0x80020324;
   if (param_1 != 0) {
     FUN_000019e4();
-    uVar1 = FUN_00002300();
-    FUN_00002398(0x24050001,0xffffffdf);
+    uVar1 = sceKernelCpuSuspendIntr();
+    sceKernelCpuSuspendIntr(0x24050001,0xffffffdf);
     uVar2 = 0;
     FUN_0000198c(0x40);
-    FUN_00002318(uVar1);
+    sceKernelCpuResumeIntr(uVar1);
   }
 
   return uVar2;
@@ -624,7 +631,7 @@ undefined4 FUN_00002114(int param_1) {
     }
     if ((*(int *)(param_1 + 0x20) == 0) && ((_DAT_be540018 & 8) == 0)) {
       FUN_00001abc();
-      FUN_00002348(*(undefined4 *)(param_1 + 0x4c),0x20);
+      sceKernelCpuResumeIntr(*(undefined4 *)(param_1 + 0x4c),0x20);
       *(undefined4 *)(param_1 + 0x50) = 0;
       uVar1 = 0;
     }
@@ -650,8 +657,21 @@ undefined4 FUN_00002210(int param_1) {
       }
     } while (((_DAT_be540018 & 0x10) == 0) && (*(int *)(param_1 + 0x2c) < *(int *)(param_1 + 0x40)));
     if (bVar1) {
-      FUN_00002348(*(undefined4 *)(param_1 + 0x4c),0x10);
+      sceKernelCpuResumeIntr(*(undefined4 *)(param_1 + 0x4c),0x10);
     }
   }
+  return 0;
+}
+
+undefined4 module_stop(void) {
+  FUN_00001b54();
+  sceGpioPortSet(4);
+  sceSysregSircsClkDisable();
+  sceSysregSircsIoDisable();
+  sceKernelReleaseIntrHandler(0xe);
+  sceKernelDeleteSema(0x3821);
+  sceKernelDeleteEventFlag(0xc0008de);
+  FUN_00001b54();
+  FUN_00000a4c();
   return 0;
 }
