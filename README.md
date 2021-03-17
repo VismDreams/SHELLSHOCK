@@ -1,6 +1,6 @@
 ## SHELLSHOCK 
 
-![shellno][https://github.com/0xVISM/SHELLSHOCK/blob/master/repository-open-graph-template.png?raw=true]
+![shellno][https://github.com/0xVISM/SHELLSHOCK/blob/master/990cb880-d5eb-11ea-92ea-774127001be5.png?raw=true]
 
 ## EN:
 **A reverse engineering project involving the PSP Go firmware (6.60 - 6.61)**
